@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ohio BMV Permit Practice Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-image: url('corvette.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            padding: 20px;
+            color: #2d3748;
+        }
+
+        .quiz-container { 
+            background: rgba(255, 255, 255, 0.92); 
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 40px; 
+            border-radius: 24px; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6); 
+            max-width: 700px; 
+            width: 100%; 
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        h1 { 
+            color: #1a202c; 
+            margin-top: 0; 
+            font-weight: 800;
+            font-size: 2.2em;
+            letter-spacing: -0.5px;
+        }
+
+        .menu-screen p {
+            font-size: 1.2em;
+            color: #475569;
+            margin-bottom: 30px;
+        }
+
+        .pool-btn {
+            background: #0f172a;
+            color: white;
+            border: none;
+            padding: 16px 30px;
+            font-size: 1.1em;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 15px;
+            transition: all 0.2s ease;
+        }
+
+        .pool-btn:hover {
+            background: #cc0000;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(204, 0, 0, 0.3);
+        }
+
+        /* Quiz UI Elements */
+        .progress-container {
+            width: 100%;
+            background-color: #cbd5e1;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            height: 12px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #cc0000;
+            width: 0%;
+            border-radius: 10px;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .progress-text { 
+            color: #475569; 
+            font-size: 0.95em; 
+            font-weight: 600; 
+            margin-bottom: 25px;
+        }
+
+        .question { 
+            font-size: 1.35em; 
+            margin-bottom: 25px; 
+            font-weight: 700;
+            line-height: 1.4;
+            color: #0f172a;
+            text-align: left;
+        }
+
+        .options { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 14px; 
+        }
+
+        button { 
+            padding: 16px 20px; 
+            font-size: 1.05em; 
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            border: 2px solid #cbd5e1; 
+            border-radius: 12px; 
+            background: #ffffff; 
+            color: #334155; 
+            cursor: pointer; 
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+            text-align: left;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+
+        button:hover:not(:disabled) { 
+            background: #f8fafc; 
+            border-color: #cc0000;
+            color: #cc0000;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(204, 0, 0, 0.15);
+        }
+
+        button:disabled { cursor: not-allowed; }
+
+        .correct { 
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important; 
+            color: white !important; 
+            border-color: #059669 !important; 
+        }
+
+        .incorrect { 
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important; 
+            color: white !important; 
+            border-color: #dc2626 !important; 
+        }
+
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.95) translateY(10px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .feedback { 
+            margin-top: 25px; 
+            font-size: 1.1em;
+            min-height: 40px; 
+            line-height: 1.5;
+            padding: 15px;
+            border-radius: 12px;
+            display: none; 
+            text-align: left;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .feedback-correct { background: #ecfdf5; border-left: 5px solid #10b981; color: #065f46; display: block; }
+        .feedback-incorrect { background: #fef2f2; border-left: 5px solid #ef4444; color: #991b1b; display: block; }
+
+        #next-btn { 
+            margin-top: 25px; 
+            background: #cc0000;
+            color: white; 
+            border: none;
+            display: none; 
+            width: 100%;
+            font-weight: 700;
+            text-align: center;
+            font-size: 1.2em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        #next-btn:hover { background: #a30000; }
+
+        .result-container h2 { font-size: 3em; margin-bottom: 10px; font-weight: 800; }
+        .result-container p { font-size: 1.4em; margin-bottom: 35px; color: #334155; }
+        .pass { color: #10b981; }
+        .fail { color: #ef4444; }
+        
+        .restart-btn {
+            background: #0f172a;
+            color: white;
+            border: none;
+            text-align: center;
+            width: auto;
+            padding: 18px 40px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .restart-btn:hover { background: #000000; }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1>Ohio BMV Practice Quiz</h1>
+        
+        <!-- Selection Menu -->
+        <div id="menu-screen" class="menu-screen">
+            <p>Select your question pool size to begin:</p>
+            <button class="pool-btn" onclick="startQuiz(60)">Standard Pool (60 Possible Questions)</button>
+            <button class="pool-btn" onclick="startQuiz(100)">Comprehensive Pool (100 Possible Questions)</button>
+        </div>
+
+        <!-- Active Quiz Screen -->
+        <div id="quiz-ui" style="display: none;">
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <div class="progress-text" id="progress-text"></div>
+            
+            <div class="question" id="question-text">Loading...</div>
+            <div class="options" id="options-container"></div>
+            <div class="feedback" id="feedback-text"></div>
+            <button id="next-btn" onclick="nextQuestion()">Next Question ➡️</button>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="result" class="result-container" style="display: none;">
+            <h2 id="result-title"></h2>
+            <p id="score-text"></p>
+            <button class="restart-btn" onclick="location.reload()">🔄 Choose New Pool</button>
+        </div>
+    </div>
+
+    <!-- Link both question files -->
+    <script src="questions_60.js"></script>
+    <script src="questions_100.js"></script>
+
+    <script>
+        let selectedQuestions = [];
+        let currentQuestion = 0;
+        let score = 0;
+        const totalQuestions = 40;
+        const passScore = 30;
+
+        function startQuiz(poolSize) {
+            let activePool = (poolSize === 60) ? questionPool60 : questionPool100;
+            
+            if (!activePool || activePool.length === 0) {
+                alert("Error: Could not find the question pool file. Make sure questions_60.js and questions_100.js are in the same folder.");
+                return;
+            }
+
+            let shuffled = [...activePool].sort(() => 0.5 - Math.random());
+            selectedQuestions = shuffled.slice(0, totalQuestions);
+            
+            currentQuestion = 0;
+            score = 0;
+            
+            document.getElementById("menu-screen").style.display = "none";
+            document.getElementById("quiz-ui").style.display = "block";
+            
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const q = selectedQuestions[currentQuestion];
+            
+            document.getElementById("progress-text").textContent = `Question ${currentQuestion + 1} of ${totalQuestions}`;
+            const progressPercent = ((currentQuestion) / totalQuestions) * 100;
+            document.getElementById("progress-bar").style.width = progressPercent + "%";
+            
+            document.getElementById("question-text").textContent = q.q;
+            
+            const optionsEl = document.getElementById("options-container");
+            optionsEl.innerHTML = "";
+            
+            const feedbackEl = document.getElementById("feedback-text");
+            feedbackEl.className = "feedback"; 
+            feedbackEl.innerHTML = "";
+            
+            document.getElementById("next-btn").style.display = "none";
+
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement("button");
+                btn.textContent = opt;
+                btn.onclick = () => checkAnswer(index, btn);
+                optionsEl.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedIndex, selectedBtn) {
+            const q = selectedQuestions[currentQuestion];
+            const buttons = document.getElementById("options-container").querySelectorAll("button");
+            const feedbackEl = document.getElementById("feedback-text");
+            
+            buttons.forEach(btn => btn.disabled = true);
+
+            if (selectedIndex === q.a) {
+                selectedBtn.classList.add("correct");
+                feedbackEl.innerHTML = `<strong>✅ Correct!</strong><br><span style="font-size: 0.9em; margin-top: 5px; display: inline-block;">${q.exp}</span>`;
+                feedbackEl.className = "feedback feedback-correct";
+                score++;
+            } else {
+                selectedBtn.classList.add("incorrect");
+                buttons[q.a].classList.add("correct");
+                feedbackEl.innerHTML = `<strong>❌ Incorrect.</strong><br><span style="font-size: 0.9em; margin-top: 5px; display: inline-block;">${q.exp}</span>`;
+                feedbackEl.className = "feedback feedback-incorrect";
+            }
+            
+            const progressPercent = ((currentQuestion + 1) / totalQuestions) * 100;
+            document.getElementById("progress-bar").style.width = progressPercent + "%";
+            
+            document.getElementById("next-btn").style.display = "block";
+            
+            if (currentQuestion === totalQuestions - 1) {
+                document.getElementById("next-btn").innerHTML = "See Final Results 🏆";
+            } else {
+                document.getElementById("next-btn").innerHTML = "Next Question ➡️";
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < totalQuestions) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById("quiz-ui").style.display = "none";
+            document.getElementById("result").style.display = "block";
+            
+            const resultTitle = document.getElementById("result-title");
+            const scoreText = document.getElementById("score-text");
+            
+            if (score >= passScore) {
+                resultTitle.textContent = "🎉 Passed!";
+                resultTitle.className = "pass";
+            } else {
+                resultTitle.textContent = "🛑 Did Not Pass";
+                resultTitle.className = "fail";
+            }
+            
+            scoreText.innerHTML = `You scored <strong>${score}</strong> out of <strong>${totalQuestions}</strong>.<br><br><span style="font-size: 0.8em;">(Passing score is ${passScore})</span>`;
+        }
+    </script>
+</body>
+</html>
